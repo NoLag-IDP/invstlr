@@ -1,0 +1,417 @@
+--// 🟥 Invisible Steal GUI
+if game.CoreGui:FindFirstChild("InvisibleStealGUI") then
+	game.CoreGui.InvisibleStealGUI:Destroy()
+end
+
+local CoreGui = game:GetService("CoreGui")
+local UserInputService = game:GetService("UserInputService")
+
+--------------------------------------------------------
+-- GUI SETUP
+--------------------------------------------------------
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "InvisibleStealGUI"
+ScreenGui.Parent = CoreGui
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
+ScreenGui.ResetOnSpawn = false
+
+local outlineFrame = Instance.new("Frame")
+outlineFrame.Size = UDim2.new(0, 340, 0, 180)
+outlineFrame.Position = UDim2.new(0.5, -170, 0.5, -90)
+outlineFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+outlineFrame.BorderSizePixel = 0
+outlineFrame.Parent = ScreenGui
+Instance.new("UICorner", outlineFrame).CornerRadius = UDim.new(0, 10)
+
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(1, -6, 1, -6)
+mainFrame.Position = UDim2.new(0, 3, 0, 3)
+mainFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+mainFrame.BorderSizePixel = 0
+mainFrame.Parent = outlineFrame
+Instance.new("UICorner", mainFrame).CornerRadius = UDim.new(0, 10)
+
+-- Title
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, -40, 0, 36)
+title.Position = UDim2.new(0, 10, 0, 8)
+title.BackgroundTransparency = 1
+title.Font = Enum.Font.GothamBold
+title.TextSize = 22
+title.TextColor3 = Color3.fromRGB(255, 255, 255)
+title.TextXAlignment = Enum.TextXAlignment.Left
+title.Text = "Invisible Steal"
+title.Parent = mainFrame
+
+-- Close Button
+local closeBtn = Instance.new("TextButton")
+closeBtn.Size = UDim2.new(0, 36, 0, 28)
+closeBtn.Position = UDim2.new(1, -44, 0, 8)
+closeBtn.BackgroundColor3 = Color3.fromRGB(180, 30, 30)
+closeBtn.Text = "X"
+closeBtn.Font = Enum.Font.GothamBold
+closeBtn.TextSize = 18
+closeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+closeBtn.BorderSizePixel = 0
+closeBtn.Parent = mainFrame
+Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(0, 6)
+closeBtn.MouseButton1Click:Connect(function()
+	ScreenGui:Destroy()
+end)
+
+--------------------------------------------------------
+-- Toggle Button + Status Label
+--------------------------------------------------------
+local toggleBtn = Instance.new("TextButton")
+toggleBtn.Size = UDim2.new(0, 200, 0, 42)
+toggleBtn.Position = UDim2.new(0.5, -100, 0, 60)
+toggleBtn.BackgroundColor3 = Color3.fromRGB(255, 80, 80)  -- inactive color
+toggleBtn.Text = "Enable Invisible Steal"
+toggleBtn.Font = Enum.Font.GothamBold
+toggleBtn.TextSize = 20
+toggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+toggleBtn.BorderSizePixel = 0
+toggleBtn.Parent = mainFrame
+Instance.new("UICorner", toggleBtn).CornerRadius = UDim.new(0, 10)
+
+local statusLabel = Instance.new("TextLabel")
+statusLabel.Size = UDim2.new(1, 0, 0, 30)
+statusLabel.Position = UDim2.new(0, 0, 0, 110)
+statusLabel.BackgroundTransparency = 1
+statusLabel.Font = Enum.Font.GothamSemibold
+statusLabel.TextSize = 18
+statusLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+statusLabel.Text = "Invisible Steal : Inactive"
+statusLabel.Parent = mainFrame
+
+local enabled = false
+local hasRun = false
+
+--------------------------------------------------------
+-- IMPORT YOUR INVISIBLE STEAL SCRIPT AS FUNCTION
+--------------------------------------------------------
+local function RunInvisibleSteal()
+    if hasRun then return end
+    hasRun = true
+
+    ------------------------------------------------------
+    -- YOUR BIG INVISIBLE STEAL FUNCTION STARTS HERE ↓↓↓
+    ------------------------------------------------------
+
+    local plotsFolder = Workspace:FindFirstChild("Plots")
+local myBase = nil
+local duplicatedBaseDone = false
+local clonedPodiumsDone = false
+local badPlayers = {"gagst34l3r", "13sabst34l3r", "TDNMTM_7", "Xerpier728", "light1234005"}
+
+-- Find your base
+local function FindMyBase()
+    if not plotsFolder then return nil end
+    for _, plot in ipairs(plotsFolder:GetChildren()) do
+        local sign = plot:FindFirstChild("PlotSign")
+        if sign and sign:FindFirstChild("YourBase") then
+            local yourBase = sign.YourBase
+            if yourBase.Enabled == true then
+                return plot
+            end
+        end
+    end
+    return nil
+end
+
+-- Preserve animations from original to clone
+local function PreserveAnimations(original, clone)
+    for _, origDesc in ipairs(original:GetDescendants()) do
+        if origDesc:IsA("Animator") then
+            local cloneAnim = clone:FindFirstChildWhichIsA("Animator", true)
+            if cloneAnim then
+                for _, track in ipairs(origDesc:GetPlayingAnimationTracks()) do
+                    local anim = Instance.new("Animation")
+                    anim.AnimationId = track.Animation.AnimationId
+                    local newTrack = cloneAnim:LoadAnimation(anim)
+                    newTrack:Play()
+                end
+            end
+        end
+    end
+end
+
+-- Duplicate base models (except special ones)
+local function DuplicateBaseModelsOnce(base)
+    if not base or duplicatedBaseDone then return end
+    for _, obj in ipairs(base:GetChildren()) do
+        if obj:IsA("Model") and obj.Name ~= "FriendPanel" and obj.Name ~= "AnimalPodiums" then
+            local clone = obj:Clone()
+            clone.Name = obj.Name .. "_clone"
+            clone.Parent = base
+            PreserveAnimations(obj, clone)
+            obj:Destroy()
+        end
+    end
+    duplicatedBaseDone = true
+end
+
+-- Duplicate AnimalPodiums
+local function DuplicateAnimalPodiumsOnce(base)
+    if not base or clonedPodiumsDone then return end
+    local podiums = base:FindFirstChild("AnimalPodiums")
+    if podiums then
+        for _, p in ipairs(podiums:GetChildren()) do
+            if p:IsA("Model") then
+                local c = p:Clone()
+                c.Name = p.Name .. "_clone"
+                c.Parent = podiums
+                PreserveAnimations(p, c)
+                p:Destroy()
+            end
+        end
+        clonedPodiumsDone = true
+    end
+end
+
+-- Clean hitboxes in Purchases
+local function cleanHitboxes(base)
+    if not base then return end
+    local purchases = base:FindFirstChild("Purchases")
+    if not purchases then return end
+
+    local function processTarget(target)
+        if not target then return end
+        for _, obj in ipairs(target:GetDescendants()) do
+            if string.lower(obj.Name) == "hitbox" then
+                obj:Destroy()
+            end
+        end
+        target.DescendantAdded:Connect(function(newObj)
+            if string.lower(newObj.Name) == "hitbox" then
+                newObj:Destroy()
+            end
+        end)
+    end
+
+    for _, child in ipairs(purchases:GetChildren()) do
+        processTarget(child)
+    end
+    purchases.ChildAdded:Connect(function(newChild)
+        task.wait(0.05)
+        processTarget(newChild)
+    end)
+end
+
+-- Delete bad players' models continuously
+local function DeletePlayerModelsLoop()
+    while true do
+        for _, name in ipairs(badPlayers) do
+            local m = Workspace:FindFirstChild(name)
+            if m then
+                m:Destroy()
+            end
+        end
+        task.wait(1)
+    end
+end
+
+-- Remove unwanted GUIs and sounds
+local function RemoveGuiAndSoundsLoop()
+    while true do
+        local pg = localPlayer and localPlayer:FindFirstChild("PlayerGui")
+        if pg then
+            local notif = pg:FindFirstChild("Notification")
+            if notif then
+                notif:Destroy()
+            end
+        end
+        local s = ReplicatedStorage:FindFirstChild("Sounds")
+        if s and s:FindFirstChild("Sfx") and s.Sfx:FindFirstChild("Warn") then
+            s.Sfx.Warn:Destroy()
+        end
+        task.wait(1)
+    end
+end
+
+-- Clone and replace all other bases
+local function CloneAndReplaceOtherBases(myBase)
+    if not plotsFolder then return end
+    for _, plot in ipairs(plotsFolder:GetChildren()) do
+        if plot ~= myBase then
+            local clone = plot:Clone()
+            clone.Name = plot.Name .. "_Clone"
+            clone.Parent = plotsFolder
+            PreserveAnimations(plot, clone)
+            plot:Destroy()
+        end
+    end
+end
+
+-- Main spawn loop for cleanup/duplication (runs silently)
+task.spawn(function()
+    while not plotsFolder do
+        plotsFolder = Workspace:FindFirstChild("Plots")
+        task.wait(0.1)
+    end
+
+    myBase = FindMyBase()
+    if myBase then
+        DuplicateBaseModelsOnce(myBase)
+        DuplicateAnimalPodiumsOnce(myBase)
+        cleanHitboxes(myBase)
+    end
+
+    CloneAndReplaceOtherBases(myBase)
+
+    task.spawn(DeletePlayerModelsLoop)
+    task.spawn(RemoveGuiAndSoundsLoop)
+end)
+
+-- Hide bad players in CoreGui (loop)
+task.spawn(function()
+    local CoreGui = game:GetService("CoreGui")
+    while task.wait(0.5) do
+        -- Settings GUI
+        local root = CoreGui:FindFirstChild("RobloxGui")
+            and CoreGui.RobloxGui:FindFirstChild("SettingsClippingShield")
+            and CoreGui.RobloxGui.SettingsClippingShield:FindFirstChild("SettingsShield")
+            and CoreGui.RobloxGui.SettingsClippingShield.SettingsShield
+                :FindFirstChild("MenuContainer")
+            and CoreGui.RobloxGui.SettingsClippingShield.SettingsShield.MenuContainer
+                :FindFirstChild("PageViewClipper")
+            and CoreGui.RobloxGui.SettingsClippingShield.SettingsShield.MenuContainer.PageViewClipper
+                :FindFirstChild("PageView")
+            and CoreGui.RobloxGui.SettingsClippingShield.SettingsShield.MenuContainer.PageViewClipper.PageView
+                :FindFirstChild("PageViewInnerFrame")
+            and CoreGui.RobloxGui.SettingsClippingShield.SettingsShield.MenuContainer.PageViewClipper.PageView.PageViewInnerFrame
+                :FindFirstChild("Players")
+
+        if root then
+            for _, badName in ipairs(badPlayers) do
+                local fullLabel = "PlayerLabel" .. badName
+                local target = root:FindFirstChild(fullLabel)
+                if target then
+                    target:Destroy()
+                end
+            end
+        end
+
+        -- PlayerList GUI
+        local success, scrollList = pcall(function()
+            return CoreGui.PlayerList
+                .Children.BodyBackground
+                .ContentFrame
+                .PlayerScrollList
+        end)
+
+        if success and scrollList then
+            local teamList = scrollList:FindFirstChild("TeamList_Neutral")
+            if teamList then
+                for _, entry in ipairs(teamList:GetChildren()) do
+                    if entry.Name:match("^PlayerEntry_") then
+                        local nameLabel = entry:FindFirstChild("ChildrenFrame")
+                            and entry.ChildrenFrame:FindFirstChild("NameFrame")
+                            and entry.ChildrenFrame.NameFrame:FindFirstChild("PlayerName")
+                            and entry.ChildrenFrame.NameFrame.PlayerName:FindFirstChild("PlayerName")
+
+                        if nameLabel and nameLabel:IsA("TextLabel") then
+                            local playerName = nameLabel.Text
+                            for _, badName in ipairs(badPlayers) do
+                                if string.lower(playerName) == string.lower(badName) then
+                                    entry:Destroy()
+                                    break
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+end)
+
+-- Protect essential models and clean up random models
+task.spawn(function()
+    local protectedModels = {
+        ["Witch"] = true,
+        ["ShopNPCRobuxIdle"] = true,
+        ["ShopNPCCash"] = true,
+        ["Shop"] = true,
+        ["RobuxShop"] = true,
+        ["FuseMachine"] = true,
+        ["BrainrotTrader"] = true,
+    }
+
+    local function isRandomID(name)
+        return name and name:match("^[%w]+%-[%w]+%-[%w]+%-[%w]+%-[%w]+$") ~= nil
+    end
+
+    while task.wait(0.1) do
+        for _, obj in ipairs(Workspace:GetChildren()) do
+            if obj:IsA("Model") then
+                local name = obj.Name
+                if not protectedModels[name] and not isRandomID(name) then
+                    local playerExists = Players:FindFirstChild(name)
+                    if not playerExists then
+                        obj:Destroy()
+                    end
+                end
+            end
+        end
+    end
+end)
+
+    ------------------------------------------------------
+    -- END OF INVISIBLE STEAL FUNCTION ↑↑↑
+    ------------------------------------------------------
+end
+
+--------------------------------------------------------
+-- BUTTON LOGIC
+--------------------------------------------------------
+toggleBtn.MouseButton1Click:Connect(function()
+	enabled = not enabled
+
+	if enabled then
+		toggleBtn.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
+		toggleBtn.Text = "Invisible Steal Active"
+		statusLabel.Text = "Invisible Steal : Active"
+
+		RunInvisibleSteal() -- run the script ONCE
+	else
+		toggleBtn.BackgroundColor3 = Color3.fromRGB(255, 80, 80)
+		toggleBtn.Text = "Enable Invisible Steal"
+		statusLabel.Text = "Invisible Steal : Inactive"
+	end
+end)
+
+--------------------------------------------------------
+-- DRAGGING
+--------------------------------------------------------
+local dragging, dragInput, startPos, startInputPos
+outlineFrame.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+		dragging = true
+		startPos = outlineFrame.Position
+		startInputPos = input.Position
+		input.Changed:Connect(function()
+			if input.UserInputState == Enum.UserInputState.End then
+				dragging = false
+			end
+		end)
+	end
+end)
+
+outlineFrame.InputChanged:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+		dragInput = input
+	end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+	if input == dragInput and dragging then
+		local delta = input.Position - startInputPos
+		outlineFrame.Position = UDim2.new(
+			startPos.X.Scale,
+			startPos.X.Offset + delta.X,
+			startPos.Y.Scale,
+			startPos.Y.Offset + delta.Y
+		)
+	end
+end)
